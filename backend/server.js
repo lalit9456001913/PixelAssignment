@@ -16,6 +16,10 @@ var session = require('express-session')
 
 require('./schema.js')
 const User = mongoose.model('User')
+
+/**** import auth middleware */
+const middleware = require('./middleware.js')
+/***************** */
 const SECRET_KEY = "pixels"
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json());
@@ -29,13 +33,13 @@ app.use(session({
 }))
 
 const hashmap={
-  "1":"Monday",
-  "2":"Tuesday",
-  "3":"Wednessday",
-  "4":"Thursday",
-  "5":"Friday",
-  "6":"Saturday",
-  "7":"Sunday"
+  1:"Monday",
+  2:"Tuesday",
+  3:"Wednessday",
+  4:"Thursday",
+  5:"Friday",
+  6:"Saturday",
+  7:"Sunday"
 }
 
 app.post('/createUser',async(req,res)=>{
@@ -81,13 +85,14 @@ app.post('/login',async(req,res)=>{
     }
 })
 
-app.post('/sendDateAndGetDay',(req,res)=>{
+app.post('/sendDateAndGetDay',middleware.verifyUser,(req,res)=>{
   try{
     let date = new Date(req.body.date)
-    console.log(date)
     let day_of_week = date.getDay()
-    
-    res.json({"status":200,day:hashmap[day_of_week.toString()],day_of_week:day_of_week})
+    if(day_of_week==0){
+      day_of_week+=7
+    }
+    res.json({"status":200,day:hashmap[day_of_week],day_of_week:day_of_week})
   }catch(error){
     res.status(500).json({"error":error})
   }
